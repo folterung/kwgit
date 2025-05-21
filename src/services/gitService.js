@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import simpleGit from 'simple-git';
 
 /**
@@ -45,12 +46,19 @@ export async function getLastCommitTimestamp(branchName) {
  * Gets merged branches into the given base (e.g. main, develop).
  */
 export async function getMergedBranches(base = 'main') {
-  const merged = await getGit().raw(['branch', '--merged', base]);
-
-  return merged
-    .split('\n')
-    .map(line => line.trim().replace(/^\* /, ''))
-    .filter(name => name && name !== base);
+  try {
+    const merged = await getGit().raw(['branch', '--merged', base]);
+    return merged
+      .split('\n')
+      .map(line => line.trim().replace(/^\* /, ''))
+      .filter(name => name && name !== base);
+  } catch (err) {
+    if (err.message.includes('malformed object name')) {
+      console.error(chalk.red(`✗ The base branch '${base}' does not exist in this repository.`));
+      return [];
+    }
+    throw err;
+  }
 }
 
 /**
