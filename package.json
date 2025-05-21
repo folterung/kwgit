@@ -1,0 +1,40 @@
+{
+    "name": "kwgit",
+    "version": "1.0.0",
+    "description": "A command-line utility to help with cleaning up git branches. This tool provides a safe and efficient way to manage your git branches, helping you keep your repository clean and organized.",
+    "type": "module",
+    "bin": {
+        "kwgit": "bin/kwgit.js"
+    },
+    "scripts": {
+        "start": "node ./bin/kwgit.js",
+        "test": "vitest run",
+        "dev:test": "vitest watch"
+    },
+    "keywords": [
+        "git",
+        "cli",
+        "branches",
+        "cleanup",
+        "yargs",
+        "simple-git"
+    ],
+    "author": "Kevin Warnock",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/folterung/kwgit.git"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    },
+    "dependencies": {
+        "chalk": "^5.3.0",
+        "inquirer": "^12.6.1",
+        "simple-git": "^3.19.1",
+        "yargs": "^17.7.2"
+    },
+    "devDependencies": {
+        "vitest": "^3.1.4"
+    }
+}
