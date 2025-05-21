@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { getLocalBranches, getLastCommitTimestamp, deleteBranch } from '../services/gitService.js';
+import { getLocalBranches, getLastCommitTimestamp, deleteBranch, deleteRemoteBranch, remoteBranchExists } from '../services/gitService.js';
 import { confirmBranchDeletion } from '../utils/prompts.js';
 
 export const staleCommand = {
@@ -35,8 +35,14 @@ export const staleCommand = {
         type: 'boolean',
         describe: 'Delete matching branches without prompt',
         default: false,
+      })
+      .option('remote', {
+        alias: 'r',
+        type: 'boolean',
+        describe: 'Also delete matching remote tracking branches (origin/...)',
+        default: false,
       }),
-  handler: async ({ days, maxDays, base, dryRun, force }) => {
+  handler: async ({ days, maxDays, base, dryRun, force, remote }) => {
     const branches = await getLocalBranches();
     const now = Math.floor(Date.now() / 1000); // seconds
     const candidates = [];
@@ -78,6 +84,28 @@ export const staleCommand = {
         }
       } else {
         console.log(chalk.gray(`  Skipped ${branch}`));
+      }
+
+      if (remote) {
+        const remoteExists = await remoteBranchExists(branch);
+        
+        if (!remoteExists) {
+          console.log(chalk.gray(`  ⓘ Skipped remote delete: origin/${branch} does not exist.`));
+          continue;
+        }
+
+        const confirmRemote = force ? true : await confirmBranchDeletion(`origin/${branch}`);
+        
+        if (confirmRemote) {
+          try {
+            await deleteRemoteBranch(branch);
+            console.log(chalk.green(`  ✓ Deleted remote branch: origin/${branch}`));
+          } catch (err) {
+            console.error(chalk.red(`  ✗ Failed to delete remote branch: origin/${branch}: ${err.message}`));
+          }
+        } else {
+          console.log(chalk.gray(`  Skipped remote branch: origin/${branch}`));
+        }
       }
     }
   },

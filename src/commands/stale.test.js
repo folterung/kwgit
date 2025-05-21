@@ -69,3 +69,45 @@ describe('staleCommand', () => {
     expect(deleteSpy).not.toHaveBeenCalled();
   });
 });
+
+  it('should delete remote branches if --remote is passed and remote branch exists', async () => {
+    vi.spyOn(gitService, 'getLocalBranches').mockResolvedValue(['feature/x']);
+    vi.spyOn(gitService, 'getLastCommitTimestamp').mockResolvedValue(now - (100 * 86400)); // 100 days ago
+    vi.spyOn(prompts, 'confirmBranchDeletion').mockResolvedValue(true);
+    vi.spyOn(gitService, 'remoteBranchExists').mockResolvedValue(true);
+    
+    const remoteDeleteSpy = vi.spyOn(gitService, 'deleteRemoteBranch').mockResolvedValue();
+    const localDeleteSpy = vi.spyOn(gitService, 'deleteBranch').mockResolvedValue();
+
+    await staleCommand.handler({
+      days: 30,
+      maxDays: 365,
+      base: 'main',
+      dryRun: false,
+      force: false,
+      remote: true,
+    });
+
+    expect(localDeleteSpy).toHaveBeenCalledWith('feature/x', true);
+    expect(remoteDeleteSpy).toHaveBeenCalledWith('feature/x');
+  });
+
+  it('should skip remote deletion if remote branch does not exist', async () => {
+    vi.spyOn(gitService, 'getLocalBranches').mockResolvedValue(['ghost']);
+    vi.spyOn(gitService, 'getLastCommitTimestamp').mockResolvedValue(now - (80 * 86400));
+    vi.spyOn(gitService, 'remoteBranchExists').mockResolvedValue(false);
+    vi.spyOn(gitService, 'deleteBranch').mockResolvedValue();
+
+    const remoteDeleteSpy = vi.spyOn(gitService, 'deleteRemoteBranch');
+
+    await staleCommand.handler({
+      days: 30,
+      maxDays: 365,
+      base: 'main',
+      dryRun: false,
+      force: true,
+      remote: true,
+    });
+
+    expect(remoteDeleteSpy).not.toHaveBeenCalled();
+  });
