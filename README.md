@@ -16,6 +16,7 @@ A command-line utility to help with cleaning up git branches. This tool provides
   - Interactive review process
   - Dry run mode for safety
   - Exclude specific branches (e.g., main)
+  - Support for remote branch cleanup with confirmation
 
 ## Installation
 
@@ -63,7 +64,21 @@ kwgit stale --max-days 180
 
 # Preview changes without deleting
 kwgit stale --dry-run
+
+# Remove stale branches including remote (with confirmation)
+kwgit stale --remote
 ```
+
+## Using with NPX
+
+You can run `kwgit` directly without installation using:
+
+```bash
+npx kwgit clean "feature/*"
+npx kwgit stale --remote
+```
+
+This is useful for one-off usage or running in CI/CD pipelines.
 
 ## Options
 
@@ -83,6 +98,7 @@ kwgit stale --dry-run
 - `--base, -b`: Branch to exclude from evaluation (default: 'main')
 - `--dry-run`: Preview stale branches without deleting (default: false)
 - `--force, -f`: Delete matching branches without prompt (default: false)
+- `--remote, -r`: Also delete matching remote tracking branches (with prompt unless --force)
 
 ## License
 
