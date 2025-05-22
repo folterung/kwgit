@@ -100,6 +100,25 @@ This is useful for one-off usage or running in CI/CD pipelines.
 - `--force, -f`: Delete matching branches without prompt (default: false)
 - `--remote, -r`: Also delete matching remote tracking branches (with prompt unless --force)
 
+## Environment Variables
+
+### `KWGIT_PROTECTED_BRANCHES`
+
+Use this environment variable to define a comma-separated list of branch names that should never be deleted, even if they match your cleanup criteria.
+
+If not specified, the default protected branches are:
+```
+main, master
+```
+
+You can set this in your shell configuration file (e.g., `.zprofile`, `.bashrc`, or `.zshrc`):
+
+```bash
+export KWGIT_PROTECTED_BRANCHES="main,master,develop,staging"
+```
+
+When running `kwgit`, these branches will always be excluded from deletion. You will see a warning message indicating they were skipped.
+
 ## License
 
 MIT

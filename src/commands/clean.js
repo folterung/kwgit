@@ -1,3 +1,4 @@
+import { isProtectedBranch } from '../services/protectionService.js';
 import chalk from 'chalk';
 import {
   deleteBranch,
@@ -67,7 +68,28 @@ export const cleanCommand = {
     }
 
     console.log(chalk.cyan(`Found ${matchingBranches.length} matching branches:`));
-    matchingBranches.forEach(branch => console.log(`  • ${chalk.green(branch)}`));
+    matchingBranches.forEach(branch => {
+      if (isProtectedBranch(branch)) {
+        console.log(`  • ${chalk.gray(branch)}`);
+      } else {
+        console.log(`  • ${chalk.green(branch)}`);
+      }
+    });
+    console.log(); // extra spacing before protected warning logs
+
+    // Filter out protected branches
+    const deletableBranches = matchingBranches.filter(branch => {
+      if (isProtectedBranch(branch)) {
+        console.log(chalk.yellow(`Skipping protected branch: ${branch}`));
+        return false;
+      }
+      return true;
+    });
+
+    if (deletableBranches.length === 0) {
+      console.log(chalk.yellow('No deletable branches found (all are protected).'));
+      return;
+    }
 
     if (dryRun) {
       console.log(chalk.gray('\nDry run enabled — no branches were deleted.'));
@@ -75,10 +97,9 @@ export const cleanCommand = {
     }
 
     console.log(chalk.bold(`\nThese branches will be deleted:`));
+    deletableBranches.forEach(branch => console.log(`  • ${chalk.red(branch)}`));
 
-    matchingBranches.forEach(branch => console.log(`  • ${chalk.red(branch)}`));
-
-    const confirm = await confirmBatchDeletion(matchingBranches);
+    const confirm = await confirmBatchDeletion(deletableBranches);
 
     if (!confirm) {
       console.log(chalk.yellow('\nAborted. No branches were deleted.'));
@@ -87,7 +108,7 @@ export const cleanCommand = {
 
     console.log(); // extra spacing
 
-    for (const branch of matchingBranches) {
+    for (const branch of deletableBranches) {
       try {
         await deleteBranch(branch, force);
         console.log(chalk.green(`✓ Deleted local branch: ${branch}`));

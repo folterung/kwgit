@@ -11,7 +11,7 @@ const cli = yargs(hideBin(process.argv))
     .demandCommand(1, 'Please specify a valid command.')
     .help()
     .alias('h', 'help')
-    .version('2.0.4')
+    .version('3.0.0')
     .alias('v', 'version');
 
 registerCommands(cli).parse();

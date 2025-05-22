@@ -68,6 +68,26 @@ describe('staleCommand', () => {
 
     expect(deleteSpy).not.toHaveBeenCalled();
   });
+
+  it('should skip protected branches and only delete unprotected ones', async () => {
+    process.env.KWGIT_PROTECTED_BRANCHES = 'main,staging';
+    vi.spyOn(gitService, 'getLocalBranches').mockResolvedValue(['main', 'staging', 'old-temp']);
+    vi.spyOn(gitService, 'getLastCommitTimestamp').mockResolvedValue(now - (90 * 86400)); // 90 days ago
+    const deleteSpy = vi.spyOn(gitService, 'deleteBranch').mockResolvedValue();
+    vi.spyOn(prompts, 'confirmBranchDeletion').mockResolvedValue(true);
+
+    await staleCommand.handler({
+      days: 30,
+      maxDays: 365,
+      base: 'main',
+      dryRun: false,
+      force: false,
+      remote: false,
+    });
+
+    expect(deleteSpy).toHaveBeenCalledTimes(1);
+    expect(deleteSpy).toHaveBeenCalledWith('old-temp', true);
+  });
 });
 
   it('should delete remote branches if --remote is passed and remote branch exists', async () => {

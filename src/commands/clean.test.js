@@ -194,4 +194,26 @@ describe('cleanCommand', () => {
 
     expect(deleteSpy).toHaveBeenCalledWith('local-only', false);
   });
+
+  it('should skip protected branches and only delete unprotected ones', async () => {
+    process.env.KWGIT_PROTECTED_BRANCHES = 'main,develop';
+    
+    vi.spyOn(gitService, 'getMergedBranches').mockResolvedValue(['main', 'develop', 'feature/clean-me']);
+
+    const deleteSpy = vi.spyOn(gitService, 'deleteBranch').mockResolvedValue();
+    
+    vi.spyOn(prompts, 'confirmBatchDeletion').mockResolvedValue(true);
+
+    await cleanCommand.handler({
+      pattern: '.*',
+      dryRun: false,
+      merged: true,
+      force: false,
+      remote: false,
+      base: 'main',
+    });
+
+    expect(deleteSpy).toHaveBeenCalledTimes(1);
+    expect(deleteSpy).toHaveBeenCalledWith('feature/clean-me', false);
+  });
 });

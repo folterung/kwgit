@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import { getLocalBranches, getLastCommitTimestamp, deleteBranch, deleteRemoteBranch, remoteBranchExists } from '../services/gitService.js';
 import { confirmBranchDeletion } from '../utils/prompts.js';
+import { isProtectedBranch } from '../services/protectionService.js';
 
 export const staleCommand = {
   command: 'stale',
@@ -64,9 +65,15 @@ export const staleCommand = {
     }
 
     console.log(chalk.yellow(`\nFound ${candidates.length} potentially stale branches:`));
+    console.log(); // blank line before listing branches
 
     for (const { branch, ageInDays } of candidates) {
       console.log(`\n  • ${chalk.red(branch)} (${chalk.gray(`${ageInDays} days old`)})`);
+
+      if (isProtectedBranch(branch)) {
+        console.log(chalk.yellow(`Skipping protected branch: ${branch}`));
+        continue;
+      }
 
       if (dryRun) {
         console.log(chalk.gray('  Skipping deletion: dry-run mode enabled.'));
