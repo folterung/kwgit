@@ -18,6 +18,19 @@ A command-line utility to help with cleaning up git branches. This tool provides
   - Exclude specific branches (e.g., main)
   - Support for remote branch cleanup with confirmation
 
+- **List Command**: Display all branches with comprehensive metadata
+  - Shows index, branch name, creation date, last commit date, and age
+  - Color-coded staleness indicators
+  - Visual indicators for protected and current branches
+  - Support for local, remote, or all branches
+  - JSON output option
+
+- **Focus Command**: Operate on branches by their list index
+  - Interactive branch-by-branch deletion prompts
+  - View selected branches without deletion
+  - Delete all selected branches at once
+  - Prevents deletion of protected and current branches
+
 ## Installation
 
 ```bash
@@ -69,6 +82,44 @@ kwgit stale --dry-run
 kwgit stale --remote
 ```
 
+### List Command
+
+```bash
+# List all local branches (default)
+kwgit list
+
+# Include remote branches
+kwgit list --remote
+
+# Show only remote branches
+kwgit list --remote-only
+
+# Show both local and remote branches
+kwgit list --all
+
+# Output as JSON
+kwgit list --json
+```
+
+### Focus Command
+
+```bash
+# Interactively delete branches by index (prompts for each)
+kwgit focus 1 2 3
+
+# View selected branches without deletion
+kwgit focus 1 2 --view
+
+# Delete all selected branches without prompts
+kwgit focus 1 2 --yes
+
+# Force delete local branches
+kwgit focus 1 --force
+
+# Focus on remote branches (must match list filters)
+kwgit focus 1 2 --remote
+```
+
 ## Using with NPX
 
 You can run `kwgit` directly without installation using:
@@ -76,6 +127,8 @@ You can run `kwgit` directly without installation using:
 ```bash
 npx kwgit clean "feature/*"
 npx kwgit stale --remote
+npx kwgit list
+npx kwgit focus 1 2 3
 ```
 
 This is useful for one-off usage or running in CI/CD pipelines.
@@ -100,6 +153,24 @@ This is useful for one-off usage or running in CI/CD pipelines.
 - `--force, -f`: Delete matching branches without prompt (default: false)
 - `--remote, -r`: Also delete matching remote tracking branches (with prompt unless --force)
 
+### List Command Options
+
+- `--remote, -r`: Include remote branches (default: false)
+- `--remote-only`: Show only remote branches (default: false)
+- `--all, -a`: Show both local and remote branches (default: false)
+- `--json`: Output structured JSON instead of table (default: false)
+
+### Focus Command Options
+
+- `<indices...>`: 0-based indices from `kwgit list` (required)
+- `--remote, -r`: Include remote branches (must match list filters) (default: false)
+- `--remote-only`: Only remote branches (must match list filters) (default: false)
+- `--all-branches, -a`: Local + remote branches (must match list filters) (default: false)
+- `--view`: Only view selected branches without deletion (default: false)
+- `--force, -f`: Force delete local branches (default: false)
+- `--yes, -y`: Delete all selected branches without individual prompts (default: false)
+- `--json`: Output structured JSON (default: false)
+
 ## Environment Variables
 
 ### `KWGIT_PROTECTED_BRANCHES`
@@ -118,6 +189,8 @@ export KWGIT_PROTECTED_BRANCHES="main,master,develop,staging"
 ```
 
 When running `kwgit`, these branches will always be excluded from deletion. You will see a warning message indicating they were skipped.
+
+Protected branches are visually distinct in the `list` command output (shown in dimmed text with a "(protected)" label) and cannot be selected for deletion in the `focus` command.
 
 ## License
 
