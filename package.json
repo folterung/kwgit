@@ -1,6 +1,6 @@
 {
     "name": "kwgit",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "description": "A command-line utility to help with cleaning up git branches. This tool provides a safe and efficient way to manage your git branches, helping you keep your repository clean and organized.",
     "type": "module",
     "bin": {
