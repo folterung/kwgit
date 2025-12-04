@@ -1,5 +1,7 @@
 import { cleanCommand } from './clean.js';
 import { staleCommand } from './stale.js';
+import { listCommand } from './list.js';
+import { focusCommand } from './focus.js';
 
 /**
  * This function registers all available commands with yargs.
@@ -8,5 +10,7 @@ import { staleCommand } from './stale.js';
 export function registerCommands(yargsInstance) {
   return yargsInstance
     .command(cleanCommand)
-    .command(staleCommand);
+    .command(staleCommand)
+    .command(listCommand)
+    .command(focusCommand);
 }
